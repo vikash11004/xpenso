@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Budget Categories - Xpenso</title>
+<link href="global.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f8f9fc",
+                        "card-border": "#e2e8f0",
+                        "text-main": "#1e293b",
+                        "text-muted": "#64748b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<script src="theme.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<!-- App Scripts -->
+<script src="config.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth.js"></script>
+<script src="db.js"></script>
+<script src="ai-service.js"></script>
+<script src="app.js"></script>
+</head>
+<body class="app-body">
+<div class="app-container">
+<aside class="sidebar">
+<div class="sidebar-header">
+<div class="logo-box">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<h1 class="app-title">Xpenso</h1>
+</div>
+<div class="nav-container">
+<nav class="nav-list">
+<a class="nav-link" href="dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="nav-link nav-link--active" href="budgetcategories.html">
+<span class="material-symbols-outlined filled">category</span>
+<span class="text-sm font-semibold">Budget Categories</span>
+</a>
+<a class="nav-link" href="incomestreams.html">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="text-sm font-medium">Income Streams</span>
+</a>
+<a class="nav-link" href="visualreports.html">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Visual Reports</span>
+</a>
+<a class="nav-link" href="smartalerts.html">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="text-sm font-medium">Smart Alerts</span>
+</a>
+<a class="nav-link" href="settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-4">
+<a href="#" onclick="signOut(); return false;" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</div>
+</aside>
+<div class="main-content">
+<header class="top-header">
+<button class="text-slate-500 md:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex w-full items-center justify-end gap-4">
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-medium text-slate-900 user-name opacity-0 transition-opacity duration-300"></p>
+</div>
+<div class="size-9 rounded-full bg-slate-200 bg-cover bg-center ring-2 ring-white bg-avatar-user-3"></div>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-6 sm:px-8 pb-20 bg-background-light">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+<div>
+<h2 class="text-2xl font-bold text-text-main">Budget Categories</h2>
+<p class="text-text-muted text-sm mt-1">Manage your spending limits and track progress.</p>
+</div>
+<div class="flex items-center gap-3">
+<button onclick="openAddCategoryModal()" class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add Category</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="p-5 rounded-2xl bg-white border border-card-border shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+<div class="flex items-start justify-between mb-2">
+<p class="text-text-muted text-sm font-medium">Total Budget</p>
+<span class="p-1.5 bg-green-50 text-green-600 rounded-lg material-symbols-outlined text-[20px]">attach_money</span>
+</div>
+<p class="text-2xl font-bold text-text-main tracking-tight" data-stat="total-budget">₹0.00</p>
+<p class="text-xs text-text-muted mt-1">Monthly cap</p>
+</div>
+<div class="p-5 rounded-2xl bg-white border border-card-border shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+<div class="flex items-start justify-between mb-2">
+<p class="text-text-muted text-sm font-medium">Spent so far</p>
+<span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg material-symbols-outlined text-[20px]">trending_up</span>
+</div>
+<p class="text-2xl font-bold text-text-main tracking-tight" data-stat="total-spent">₹0.00</p>
+<p class="text-xs text-green-600 mt-1 font-medium bg-green-50 inline-block px-1.5 py-0.5 rounded" data-stat="spent-pct">0% of total budget</p>
+</div>
+<div class="p-5 rounded-2xl bg-white border border-card-border shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+<div class="flex items-start justify-between mb-2">
+<p class="text-text-muted text-sm font-medium">Remaining</p>
+<span class="p-1.5 bg-purple-50 text-purple-600 rounded-lg material-symbols-outlined text-[20px]">account_balance</span>
+</div>
+<p class="text-2xl font-bold text-text-main tracking-tight" data-stat="budget-remaining">₹0.00</p>
+<p class="text-xs text-text-muted mt-1">Safe to spend</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button id="bc-filter-all" onclick="filterBudgetCategories('all')" class="px-4 py-1.5 rounded-full bg-text-main text-white text-sm font-medium shadow-sm whitespace-nowrap">
+                        All Categories
+                    </button>
+<button id="bc-filter-near" onclick="filterBudgetCategories('near')" class="px-4 py-1.5 rounded-full bg-white border border-card-border text-text-muted hover:bg-slate-50 text-sm font-medium transition-colors whitespace-nowrap shadow-sm">
+                        Near Limit
+                    </button>
+<button id="bc-filter-over" onclick="filterBudgetCategories('over')" class="px-4 py-1.5 rounded-full bg-white border border-card-border text-text-muted hover:bg-slate-50 text-sm font-medium transition-colors whitespace-nowrap shadow-sm">
+                        Over Budget
+                    </button>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-text-muted" id="bc-sort-label">Sorted by: Highest Spend</span>
+<button id="bc-sort-btn" onclick="toggleBudgetSort()" class="p-1.5 rounded-lg hover:bg-slate-100 text-text-muted">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="categories-container">
+<p class="text-gray-500 p-5">Loading budget categories...</p>
+</div>
+<div class="h-12"></div>
+</div>
+<div class="sm:hidden absolute bottom-6 right-6 z-20">
+<button class="h-14 w-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

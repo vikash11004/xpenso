@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Alerts - Xpenso</title>
+<link href="global.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f8f9fc",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<script src="theme.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<!-- App Scripts -->
+<script src="config.js"></script>
+<script src="firebase-config.js"></script>
+<script src="auth.js"></script>
+<script src="db.js"></script>
+<script src="ai-service.js"></script>
+<script src="app.js"></script>
+</head>
+<body class="app-body"><div class="app-container">
+<aside class="sidebar">
+<div class="sidebar-header">
+<div class="logo-box">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<h1 class="app-title">Xpenso</h1>
+</div>
+<div class="nav-container">
+<nav class="nav-list">
+<a class="nav-link" href="dashboard.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="nav-link" href="budgetcategories.html">
+<span class="material-symbols-outlined">category</span>
+<span class="text-sm font-medium">Budget Categories</span>
+</a>
+<a class="nav-link" href="incomestreams.html">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="text-sm font-medium">Income Streams</span>
+</a>
+<a class="nav-link" href="visualreports.html">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Visual Reports</span>
+</a>
+<a class="nav-link nav-link--active" href="smartalerts.html">
+<span class="material-symbols-outlined filled">notifications_active</span>
+<span class="text-sm font-semibold">Smart Alerts</span>
+</a>
+<a class="nav-link" href="settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-4">
+<a href="#" onclick="signOut(); return false;" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</div>
+</aside>
+<div class="main-content">
+<header class="top-header">
+<button class="text-slate-500 md:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex w-full items-center justify-end gap-4">
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-medium text-slate-900 user-name opacity-0 transition-opacity duration-300"></p>
+</div>
+<div class="size-9 rounded-full bg-slate-200 bg-cover bg-center ring-2 ring-white bg-avatar-user-3"></div>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto bg-background-light p-6 lg:p-10">
+<div class="max-w-4xl mx-auto">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl font-bold tracking-tight text-slate-900">Smart Alerts</h1>
+<p class="text-slate-500 text-base font-normal">Your financial assistant is keeping an eye on things.</p>
+</div>
+</div>
+<div class="flex flex-col gap-6" id="alerts-container">
+<p class="text-gray-500 p-5">Loading alerts...</p>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

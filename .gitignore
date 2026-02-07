@@ -1,0 +1,33 @@
+# ============================================================
+#  Xpenso — .gitignore
+# ============================================================
+
+# ---------- Credentials / secrets ----------
+config.js
+
+# ---------- OS generated ----------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------- Editor ----------
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# ---------- Node (in case deps are ever added) ----------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ---------- Misc ----------
+*.log
+*.bak
+*.tmp
+.env
+.env.*
+!.env.example
