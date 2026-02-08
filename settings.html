@@ -4,6 +4,55 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Settings - Xpenso</title>
 <link href="global.css" rel="stylesheet"/>
+<style>
+/* Hide default browser range slider number/tooltip */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2b6cee;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    margin-top: -6px;
+    cursor: pointer;
+}
+input[type="range"]::-moz-range-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    border: none;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2b6cee;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+input[type="range"]:focus {
+    outline: none;
+}
+input[type="range"]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(43,108,238,0.3);
+}
+input[type="range"]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgba(43,108,238,0.3);
+}
+</style>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
         tailwind.config = {
@@ -88,6 +137,10 @@
 <button class="text-slate-500 md:hidden">
 <span class="material-symbols-outlined">menu</span>
 </button>
+<a href="index.html" class="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="hidden sm:inline">Back to Home</span>
+</a>
 <div class="flex w-full items-center justify-end gap-4">
 <div class="flex items-center gap-3">
 <div class="text-right hidden sm:block">
@@ -118,7 +171,7 @@
 </div>
 </div>
 <div class="w-full">
-<input class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-primary focus:outline-none focus:ring-2 focus:ring-primary/50" id="budget-range" max="50000" min="500" step="500" type="range" value="1500"/>
+<input class="w-full cursor-pointer" id="budget-range" max="50000" min="500" step="500" type="range" value="1500"/>
 <div class="mt-2 flex justify-between text-xs font-medium text-slate-400">
 <span>₹500</span>
 <span>₹10,000</span>

@@ -139,7 +139,6 @@ function updateDashboardStats(stats) {
     if (progressEl) {
         const percentage = stats.totalIncome > 0 ? (stats.totalExpenses / stats.totalIncome * 100).toFixed(0) : 0;
         progressEl.style.width = `${percentage}%`;
-        progressEl.textContent = `${percentage}%`;
     }
 }
 
