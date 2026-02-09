@@ -220,17 +220,8 @@ users/{uid}/
     └── {insightId}   # { message, category, type, createdAt }
 ```
 
----
 
-## 🖼 Screenshots
 
-> Add your screenshots here after deploying:
->
-> ```
-> ![Dashboard](screenshots/dashboard.png)
-> ![Visual Reports](screenshots/visual-reports.png)
-> ![Budget Categories](screenshots/budget-categories.png)
-> ```
 
 ---
 
