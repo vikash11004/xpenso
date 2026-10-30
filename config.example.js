@@ -1,27 +1,15 @@
-// ============================================================
-// Xpenso Configuration — TEMPLATE
-// ============================================================
-// 1. Copy this file:        config.example.js  →  config.js
-// 2. Fill in your own keys below.
-// 3. NEVER commit config.js to Git — it is already in .gitignore.
-// ============================================================
-
+// Public browser settings only. Copy to config.js and enter your Firebase app details.
+// Keep GROQ_API_KEY in Firebase Secret Manager (or functions/.secret.local for emulators).
 const APP_CONFIG = {
-    // Firebase (https://console.firebase.google.com)
-    firebase: {
-        apiKey:            "YOUR_FIREBASE_API_KEY",
-        authDomain:        "YOUR_PROJECT.firebaseapp.com",
-        projectId:         "YOUR_PROJECT_ID",
-        storageBucket:     "YOUR_PROJECT.firebasestorage.app",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId:             "YOUR_APP_ID",
-        measurementId:     "YOUR_MEASUREMENT_ID"
-    },
-
-    // Groq AI (https://console.groq.com)
-    groq: {
-        apiKey:  "YOUR_GROQ_API_KEY",
-        apiUrl:  "https://api.groq.com/openai/v1/chat/completions",
-        model:   "llama-3.3-70b-versatile"
-    }
+  firebase: {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+  },
+  functionsRegion: "asia-south1",
+  appCheckSiteKey: "", // Register this app with Firebase App Check / reCAPTCHA v3 before using parsing.
+  emulators: false, // Only honored on localhost / 127.0.0.1.
 };

@@ -31,3 +31,7 @@ yarn.lock
 .env
 .env.*
 !.env.example
+functions/.secret.local
+public/
+test-results/
+!package-lock.json

@@ -1,227 +1,115 @@
-# 💰 Xpenso — AI-Powered Student Expense Tracker
+# Xpenso
 
-<p align="center">
-  <strong>A smart, AI-driven expense tracking web app built for students and first-time budgeters.</strong>
-</p>
+A focused home for everyday spending. Choose monthly caps, log an expense, and see how much room remains. The interface uses warm ivory, terracotta and sage, with a matching dark theme and layouts down to 320 px.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Firebase-v10.7-orange?logo=firebase" alt="Firebase" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-CDN-38B2AC?logo=tailwindcss" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Chart.js-v4-FF6384?logo=chartdotjs" alt="Chart.js" />
-  <img src="https://img.shields.io/badge/Groq_AI-LLaMA_3.3-blue" alt="Groq AI" />
-  <img src="https://img.shields.io/badge/Currency-INR_(₹)-green" alt="INR" />
-</p>
+## Run locally
 
----
+Use Node.js 22 (also the Firebase Functions runtime).
 
-## 📋 Table of Contents
-
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Firebase Setup](#-firebase-setup)
-- [Groq AI Setup](#-groq-ai-setup)
-- [Usage](#-usage)
-- [Screenshots](#-screenshots)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| **Dashboard** | Real-time overview of income, expenses, remaining balance, and recent transactions with search |
-| **Budget Categories** | Auto-generated from transactions; filter by "Near Limit" or "Over Budget"; sortable |
-| **Income Streams** | Track recurring and one-time income; filter and sort by amount |
-| **Visual Reports** | Interactive charts — "This Month", "This Year" (monthly bar), Calendar date picker with day insights & hourly trend chart |
-| **Smart Alerts** | Auto-generated alerts for budget warnings, low balance, spending spikes, and savings milestones |
-| **AI Insights** | Groq-powered (LLaMA 3.3 70B) personalized financial tips displayed on the dashboard |
-| **Settings** | Set monthly spending limit (₹500–₹50,000 in ₹500 steps), edit profile name & email |
-| **Auth** | Email/Password + Google Sign-In via Firebase Authentication |
-| **Responsive** | Fully responsive layout with collapsible sidebar and mobile FAB buttons |
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | HTML5, Tailwind CSS (CDN), Vanilla JavaScript |
-| **Backend / DB** | Firebase Firestore (with offline persistence) |
-| **Authentication** | Firebase Auth (Email/Password + Google) |
-| **AI** | Groq Cloud API — LLaMA 3.3 70B Versatile |
-| **Charts** | Chart.js v4 (via CDN) |
-| **Icons** | Google Material Symbols Outlined |
-| **Hosting** | Any static host (Firebase Hosting, Vercel, Netlify, GitHub Pages) |
-
----
-
-## 📂 Project Structure
-
-```
-xpenso/
-├── index.html              # Landing page with animated dot particles
-├── signin.html             # Sign-in page (Email + Google)
-├── signup.html             # Sign-up page (Email + Google)
-├── dashboard.html          # Main dashboard with stats, charts, transactions
-├── budgetcategories.html   # Budget categories with filter/sort
-├── incomestreams.html      # Income streams with filter/sort
-├── visualreports.html      # Visual reports — month/year/calendar/day views
-├── smartalerts.html        # Auto-generated smart alerts
-├── settings.html           # Profile & spending limit settings
-│
-├── config.example.js       # ⬅ Template — copy to config.js & add your keys
-├── config.js               # 🔒 Your local credentials (git-ignored)
-├── firebase-config.js      # Firebase init (reads from config.js)
-├── auth.js                 # Auth functions (signUp, signIn, Google, signOut)
-├── db.js                   # Firestore CRUD (transactions, categories, alerts, insights)
-├── ai-service.js           # Groq AI insight generation (reads from config.js)
-├── app.js                  # Main application logic (~2000 lines)
-├── theme.js                # Theme utilities
-├── global.css              # Layout classes (sidebar, top-header, nav-links)
-│
-├── .gitignore              # Ignores config.js and other non-essentials
-└── README.md               # This file
+```powershell
+# Only for a new checkout; keep an existing config.js.
+Copy-Item config.example.js config.js
+npm start
 ```
 
----
+Open `http://localhost:4173/dashboard.html?demo=1` for the local demo, or add `&fresh=1` to try onboarding. Demo data stays in this browser, separately from real accounts. No installation is needed for the static frontend or unit tests. Use localhost or HTTPS so receipt hashing and camera features have a secure browser context.
 
-## 🚀 Getting Started
+The development server redirects numeric loopback URLs to `localhost`, the local domain authorized in this Firebase project for Google OAuth.
 
-### Prerequisites
+For real accounts, populate the public Firebase fields in `config.js`, enable email/password and Google authentication, and authorize your hosting domain in Firebase Authentication. Use `firestore.rules` for the database; do not use open test-mode rules. Real receipt parsing additionally needs the backend setup below. Text entry falls back to a suggestion that always requires review if the parser is unavailable.
 
-- A modern web browser (Chrome, Firefox, Edge, Safari)
-- A [Firebase](https://console.firebase.google.com) project (free tier works)
-- A [Groq](https://console.groq.com) API key (free tier available)
+## What changed
 
-### Installation
+- One dashboard replaces the sidebar, income ledger, reports and alerts screens. Old page URLs redirect to the dashboard or its cap/account sheet.
+- Onboarding uses category chips and monthly INR caps. No salary or balance fields.
+- Cap bars show an amber state at 80% and a calm offer to add ₹500 or hold the line at 100%. Flex applies only to this month and supports Undo.
+- Persistent text, camera/upload and amount-entry controls feed the same expense store. Recent spending supports editing, removing and Undo.
+- One cumulative chart compares the selected category with its cap. Pace estimates need at least three entries and three observed days. Streaks use the original monthly caps and are explicitly based on logged spending.
+- Receipt parsing handles JPG, PNG and WebP photos or UPI screenshots. Images are resized in the browser. Clear, grounded results save immediately with Undo; ambiguous results open a review sheet. Failed, pending and incoming payments cannot be auto-logged.
+- Money uses integer paise; month boundaries use Asia/Kolkata. This release displays the current calendar month. Older records remain stored, including expenses entered with an older date.
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/xpenso.git
-cd xpenso
+## Architecture
 
-# 2. Create your local config file
-cp config.example.js config.js
+The existing plain HTML/JavaScript frontend and Firebase Authentication/Firestore stack are retained. No frontend framework or chart library is required.
 
-# 3. Open config.js and fill in your Firebase + Groq credentials
-#    (see setup sections below)
+| Location                         | Responsibility                                                            |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `dashboard.html`, `shield.css`   | Responsive dashboard, dialogs and shared visual language                  |
+| `js/dashboard.mjs`               | Dashboard rendering and interactions                                      |
+| `js/domain.mjs`                  | Currency, validation, cap metrics, streaks and legacy conversion          |
+| `js/store.mjs`                   | Demo storage, authenticated Firestore writes, migration and subscriptions |
+| `js/capture.mjs`                 | Image preparation, parser calls and review fallback                       |
+| `js/firebase.mjs`, `js/auth.mjs` | Firebase initialization, account creation, sign-in and password reset     |
+| `functions/index.cjs`            | Authenticated, App Check-protected OCR/LLM callable                       |
+| `functions/parser-core.cjs`      | Strict extraction schema and source-evidence validation                   |
+| `firestore.rules`                | Owner isolation and document validation                                   |
+| `scripts/build.cjs`, `serve.cjs` | Public-asset allowlists and sanitized browser configuration               |
 
-# 4. Serve the project with any static server
-#    Option A — VS Code Live Server extension
-#    Option B — Python
-python -m http.server 5500
+Firestore layout:
 
-#    Option C — Node
-npx serve .
+```text
+users/{uid}
+  caps/{capId}                  # Default monthly limits and active categories
+  capMonths/{YYYY-MM_capId}     # Original and effective limits for one month
+  expenses/{expenseId}          # Outflows, occurredOn, monthKey, integer amountMinor
+  transactions/{legacyId}       # Preserved; read-only to the client
+  budgetCategories/{legacyId}   # Preserved; read-only to the client
+_parseUsage/{uid}               # Server-only parser rate counters
 ```
 
-Then open `http://localhost:5500` in your browser.
+The first connected session imports legacy expenses and caps with deterministic IDs. It excludes income, prefers the purchase date over the entry timestamp, and preserves all original documents. Invalid legacy records are skipped and counted in a visible notice. A retry cannot duplicate an imported expense. Unknown legacy categories remain uncapped. Migration completion is recorded as `schemaVersion: 2`.
 
----
+Receipt IDs use the SHA-256 of the original file. Transactional creation prevents repeat submissions of that same file, including across tabs. A differently cropped or recompressed image has a different hash; matching merchant/amount/date entries receive a review prompt. Images and extracted OCR text are not written to Firestore. The backend sends images to Cloud Vision and extracted text to Groq, so those providers process the submitted content.
 
-## 🔥 Firebase Setup
+## Enable the parser and deploy
 
-### 1. Create a Firebase Project
+The backend is implemented but has not been deployed or tested against the live Firebase project. These steps configure the cloud services it requires:
 
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Click **Add Project** → name it (e.g. `xpenso`) → Continue
-3. Disable Google Analytics if not needed → **Create Project**
+1. Use the existing Firebase project with billing enabled for Functions and Cloud Vision. Keep its current authentication providers and database.
+2. Enable the **Cloud Vision API** in that project. The deployed function uses its Google service identity; no Google service-account key belongs in the browser.
+3. Register the web app with Firebase App Check using reCAPTCHA v3. Add the public site key to `config.js` as `appCheckSiteKey`. The callable enforces App Check; an empty key will leave parsing unavailable. See [Firebase's provider setup](https://firebase.google.com/docs/app-check/web/recaptcha-provider).
+4. Install the function dependencies and put the Groq credential in Firebase Secret Manager:
 
-### 2. Enable Authentication
-
-1. In Firebase Console → **Build** → **Authentication** → **Get Started**
-2. Enable **Email/Password** provider
-3. Enable **Google** provider (set a support email)
-
-### 3. Create Firestore Database
-
-1. **Build** → **Firestore Database** → **Create Database**
-2. Start in **test mode** (or configure rules later)
-3. Choose a region close to you
-
-### 4. Get Firebase Config
-
-1. **Project Settings** (gear icon) → **General** → scroll to **Your Apps**
-2. Click the web icon (`</>`) → Register app → copy the config object
-3. Paste the values into your `config.js`:
-
-```javascript
-firebase: {
-    apiKey:            "AIzaSy...",
-    authDomain:        "your-project.firebaseapp.com",
-    projectId:         "your-project",
-    storageBucket:     "your-project.firebasestorage.app",
-    messagingSenderId: "123456789",
-    appId:             "1:123456789:web:abcdef",
-    measurementId:     "G-XXXXXXXXXX"
-}
+```powershell
+npm ci --prefix functions
+npx firebase-tools login
+npx firebase-tools functions:secrets:set GROQ_API_KEY --project YOUR_PROJECT_ID
 ```
 
-### 5. Firestore Security Rules (Recommended)
+The default model is `openai/gpt-oss-20b`, using [Groq strict structured outputs](https://console.groq.com/docs/structured-outputs). `PARSER_MODEL` is a Functions parameter if a different supported model is needed. Parsing is limited to 10 requests/minute and 100/day per account, with at most five function instances. Manual entry remains available when parsing fails or reaches a limit.
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
+5. Build and deploy the allowlisted frontend, rules and function together:
+
+```powershell
+npm test
+npm run build
+npx firebase-tools deploy --only "firestore:rules,functions,hosting" --project YOUR_PROJECT_ID
 ```
 
----
+The build recreates the generated `public/` directory. Only public Firebase configuration is included. Host that directory, never the repository root. The local server also blocks access to backend files, credentials and repository metadata.
 
-## 🤖 Groq AI Setup
+`functions/.secret.local` is a git-ignored emulator secret file, not a production deployment mechanism. The former browser Groq setting has been removed. If a former client-side credential was published, rotate it before using the server integration.
 
-1. Go to [Groq Console](https://console.groq.com)
-2. Sign up / Sign in
-3. Navigate to **API Keys** → **Create API Key**
-4. Copy the key and paste into your `config.js`:
+## Validation
 
-```javascript
-groq: {
-    apiKey:  "gsk_xxxxxxxxxxxxxxxxxxxx",
-    apiUrl:  "https://api.groq.com/openai/v1/chat/completions",
-    model:   "llama-3.3-70b-versatile"
-}
+```powershell
+npm test
+npm run build
 ```
 
----
+Unit tests cover exact currency math, IST month boundaries, threshold states, monthly flex, streaks, migration, conservative parsing, source-grounded amounts/dates, rejected payment states and repeatable receipt writes.
 
-## 📖 Usage
+For browser checks, install Playwright separately and run:
 
-| Page | What it does |
-|---|---|
-| **Landing** (`index.html`) | Marketing page with interactive dot animation; links to Sign Up |
-| **Sign Up / Sign In** | Create account or log in with email or Google |
-| **Dashboard** | View balance, income, expenses, recent transactions; search; get AI insights |
-| **Budget Categories** | See spending per category vs budget; filter Near Limit / Over Budget; sort |
-| **Income Streams** | View income sources; filter Recurring / One-time; sort by amount |
-| **Visual Reports** | This Month trend chart, This Year bar chart, Calendar date picker with day insights |
-| **Smart Alerts** | Auto-generated warnings and milestones based on your data |
-| **Settings** | Change name, email, monthly budget (₹500–₹50,000 in ₹500 steps); Log Out |
-
-### Firestore Data Model
-
-```
-users/{uid}/
-├── transactions/       # Single source of truth for all income & expenses
-│   └── {txId}         # { description, amount, type, category, date, createdAt }
-├── budgetCategories/   # User-defined category budgets
-│   └── {catId}        # { name, budget, icon, color }
-├── alerts/            # Auto-generated smart alerts
-│   └── {alertId}     # { title, message, type, priority, createdAt }
-└── aiInsights/        # AI-generated insights
-    └── {insightId}   # { message, category, type, createdAt }
+```powershell
+npm install --no-save playwright
+npx playwright install chromium
+node tests/browser.cjs
 ```
 
+Alternatively set `PLAYWRIGHT_MODULE` to an existing Playwright installation and `BROWSER_PATH` to an installed Chromium/Edge executable. `SCREENSHOT_DIR` controls screenshot output. The browser suite serves local source assets and stubs configuration so it never accesses real accounts. It checks 14 responsive page layouts, both themes, onboarding, create/edit/delete/Undo, cap flex, category restoration, parsing fallback, duplicate receipt handling, persistence, escaped merchant content, short-screen dialogs and mocked email/Google/signup/password-reset flows.
 
-
+Local validation passed: 20 unit tests, the browser suite, the public build and loading the callable with installed server dependencies. The server dependency audit reports zero known vulnerabilities. Live authentication, Firestore rules enforcement and the Cloud Vision-to-Groq path still need a connected staging check. The Firestore emulator requires Java, which was not available in this workspace. For emulator use, set `emulators: true` in local `config.js` and run Firebase's auth, firestore and functions emulators; production builds deliberately omit this switch. App Check needs an appropriate registered debug token in development.
 
 ---
 
