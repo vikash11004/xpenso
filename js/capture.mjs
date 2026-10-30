@@ -25,7 +25,7 @@ export async function parseText(text, store, caps, today) {
   }
   return {
     ...fallback,
-    note: "Demo suggestion. Review the details, then save.",
+    note: "Review the suggested details, then save.",
   };
 }
 export function validateParsed(data, caps, today) {
@@ -95,7 +95,7 @@ export async function prepareImage(file) {
 export async function parseReceipt(prepared, store, caps, today) {
   if (!store.functions)
     throw new Error(
-      "Receipt parsing needs a connected account. You can try the amount entry in this local demo.",
+      "Receipt parsing needs a signed-in account. Enter the amount manually while reconnecting.",
     );
   try {
     const { data } = await store.functions.httpsCallable("parseSpend", {

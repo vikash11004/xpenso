@@ -12,11 +12,11 @@ Copy-Item config.example.js config.js
 npm start
 ```
 
-Open `http://localhost:4173/dashboard.html?demo=1` for the local demo, or add `&fresh=1` to try onboarding. Demo data stays in this browser, separately from real accounts. No installation is needed for the static frontend or unit tests. Use localhost or HTTPS so receipt hashing and camera features have a secure browser context.
+Open `http://localhost:4173/`. The dashboard requires a signed-in account. Demo storage exists only as a test fixture and is excluded from the site.
 
 The development server redirects numeric loopback URLs to `localhost`, the local domain authorized in this Firebase project for Google OAuth.
 
-For real accounts, populate the public Firebase fields in `config.js`, enable email/password and Google authentication, and authorize your hosting domain in Firebase Authentication. Use `firestore.rules` for the database; do not use open test-mode rules. Real receipt parsing additionally needs the backend setup below. Text entry falls back to a suggestion that always requires review if the parser is unavailable.
+For real accounts, populate the public Firebase fields in `js/firebase-settings.mjs` (or use a local `config.js` as a build-time override), enable email/password and Google authentication, and authorize your hosting domain in Firebase Authentication. Use `firestore.rules` for the database; do not use open test-mode rules. Real receipt parsing additionally needs the backend setup below. Text entry falls back to a suggestion that always requires review if the parser is unavailable.
 
 ## What changed
 
@@ -32,18 +32,18 @@ For real accounts, populate the public Firebase fields in `config.js`, enable em
 
 The existing plain HTML/JavaScript frontend and Firebase Authentication/Firestore stack are retained. No frontend framework or chart library is required.
 
-| Location                         | Responsibility                                                            |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| `dashboard.html`, `shield.css`   | Responsive dashboard, dialogs and shared visual language                  |
-| `js/dashboard.mjs`               | Dashboard rendering and interactions                                      |
-| `js/domain.mjs`                  | Currency, validation, cap metrics, streaks and legacy conversion          |
-| `js/store.mjs`                   | Demo storage, authenticated Firestore writes, migration and subscriptions |
-| `js/capture.mjs`                 | Image preparation, parser calls and review fallback                       |
-| `js/firebase.mjs`, `js/auth.mjs` | Firebase initialization, account creation, sign-in and password reset     |
-| `functions/index.cjs`            | Authenticated, App Check-protected OCR/LLM callable                       |
-| `functions/parser-core.cjs`      | Strict extraction schema and source-evidence validation                   |
-| `firestore.rules`                | Owner isolation and document validation                                   |
-| `scripts/build.cjs`, `serve.cjs` | Public-asset allowlists and sanitized browser configuration               |
+| Location                         | Responsibility                                                        |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `dashboard.html`, `shield.css`   | Responsive dashboard, dialogs and shared visual language              |
+| `js/dashboard.mjs`               | Dashboard rendering and interactions                                  |
+| `js/domain.mjs`                  | Currency, validation, cap metrics, streaks and legacy conversion      |
+| `js/store.mjs`                   | Authenticated Firestore writes, migration and subscriptions           |
+| `js/capture.mjs`                 | Image preparation, parser calls and review fallback                   |
+| `js/firebase.mjs`, `js/auth.mjs` | Firebase initialization, account creation, sign-in and password reset |
+| `functions/index.cjs`            | Authenticated, App Check-protected OCR/LLM callable                   |
+| `functions/parser-core.cjs`      | Strict extraction schema and source-evidence validation               |
+| `firestore.rules`                | Owner isolation and document validation                               |
+| `scripts/build.cjs`, `serve.cjs` | Public-asset allowlists and sanitized browser configuration           |
 
 Firestore layout:
 
@@ -132,3 +132,7 @@ This project is open source and available under the [MIT License](LICENSE).
 <p align="center">
   Built with ❤️ for students who want to take control of their finances.
 </p>
+
+## Custom-domain Google sign-in
+
+Add `xpenso.vikashthyadi.in` in Firebase Console → Authentication → Settings → Authorized domains for project `xpenso-740e9`. This domain was missing when checked. The deployed site also returned 404 for the ignored `config.js`; the frontend now imports tracked public settings from `js/firebase-settings.mjs`, so direct repository deployments include Firebase configuration. Redeploy the updated source or generated `public/` directory. No AI secrets are included.

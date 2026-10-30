@@ -1,3 +1,4 @@
+import { publicConfig } from "./firebase-settings.mjs";
 let instance;
 function script(src) {
   return new Promise((resolve, reject) => {
@@ -14,14 +15,13 @@ function script(src) {
 export async function getFirebase() {
   if (!instance)
     instance = (async () => {
-      await script("./config.js");
-      const config = typeof APP_CONFIG !== "undefined" ? APP_CONFIG : null;
+      const config = publicConfig;
       if (
         !config?.firebase?.apiKey ||
         config.firebase.apiKey.startsWith("YOUR_")
       )
         throw new Error(
-          "Firebase is not configured yet. You can explore the demo while your account connection is set up.",
+          "Firebase is not configured. Enter the public web app settings in js/firebase-settings.mjs and redeploy.",
         );
       const base = "https://www.gstatic.com/firebasejs/10.7.1/";
       await script(base + "firebase-app-compat.js");

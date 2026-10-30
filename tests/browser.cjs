@@ -36,6 +36,18 @@ fs.mkdirSync(out, { recursive: true });
       contentType: "text/javascript",
     }),
   );
+  await ctx.route("**/js/store.mjs", (route) =>
+    route.fulfill({
+      path: path.join(root, "tests/fixtures/demo-store.mjs"),
+      contentType: "text/javascript",
+    }),
+  );
+  await ctx.route("**/js/firebase-settings.mjs", (route) =>
+    route.fulfill({
+      body: "export const publicConfig={};",
+      contentType: "text/javascript",
+    }),
+  );
   const page = await ctx.newPage(),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -159,7 +171,7 @@ fs.mkdirSync(out, { recursive: true });
   await page.locator("#expense-form").waitFor({ state: "visible" });
   assert.match(
     await page.locator("#sheet-body").textContent(),
-    /connected account/,
+    /signed-in account/,
   );
   await page.locator("#expense-amount").fill("120");
   await page.locator("#expense-merchant").fill("Receipt cafe");
@@ -218,10 +230,22 @@ fs.mkdirSync(out, { recursive: true });
       .textContent(),
     /1,800/,
   );
+  // A legacy demo URL must still require a real sign-in in production code.
+  await ctx.unroute("**/js/store.mjs");
+  await page.route("**/js/firebase.mjs", (route) =>
+    route.fulfill({
+      contentType: "text/javascript",
+      body: `export async function ensureProfile(){};export async function getFirebase(){return {auth:{onAuthStateChanged(callback){queueMicrotask(()=>callback(null));return ()=>{};}}};}`,
+    }),
+  );
+  await page.goto("http://127.0.0.1:4173/dashboard.html?demo=1");
+  await page.waitForURL("**/signin.html");
+  assert.equal(await page.locator("#auth-form").isVisible(), true);
   // Exercise auth UI against a fake provider, never a real account.
-  await page.route("**/js/firebase.mjs", (route) => route.fulfill({
-    contentType: "text/javascript",
-    body: `
+  await page.route("**/js/firebase.mjs", (route) =>
+    route.fulfill({
+      contentType: "text/javascript",
+      body: `
       let observer;
       const record = value => sessionStorage.setItem('auth-events', JSON.stringify([...JSON.parse(sessionStorage.getItem('auth-events') || '[]'), value]));
       const delay = () => new Promise(resolve => setTimeout(resolve, 25));
@@ -236,38 +260,70 @@ fs.mkdirSync(out, { recursive: true });
         async sendPasswordResetEmail(email) { await delay(); if(email==='fail@example.test')throw Object.assign(new Error('offline'),{code:'auth/network-request-failed'}); }
       } }; }
     `,
-  }));
-  await page.route("**/dashboard.html", (route) => route.fulfill({
-    contentType: "text/html", body: "<!doctype html><title>Signed in</title><p>Signed in</p>",
-  }));
+    }),
+  );
+  await page.route("**/dashboard.html", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Signed in</title><p>Signed in</p>",
+    }),
+  );
   await page.goto("http://127.0.0.1:4173/signin.html");
-  await page.waitForFunction(() => !document.querySelector("#auth-submit").disabled);
+  await page.waitForFunction(
+    () => !document.querySelector("#auth-submit").disabled,
+  );
   await page.locator("#email").fill("test@example.test");
   await page.locator("#reset-password").click();
-  await page.waitForFunction(() => !document.querySelector("#reset-password").disabled);
+  await page.waitForFunction(
+    () => !document.querySelector("#reset-password").disabled,
+  );
   assert.match(await page.locator("#auth-status").textContent(), /reset link/);
   await page.locator("#email").fill("fail@example.test");
   await page.locator("#reset-password").click();
-  await page.waitForFunction(() => !document.querySelector("#reset-password").disabled);
+  await page.waitForFunction(
+    () => !document.querySelector("#reset-password").disabled,
+  );
   assert.match(await page.locator("#auth-error").textContent(), /connection/);
   await page.evaluate(() => sessionStorage.setItem("auth-events", "[]"));
   await page.locator("#email").fill("test@example.test");
   await page.locator("#password").fill("fixture-password");
-  await page.locator("#auth-submit").click();await page.waitForURL("**/dashboard.html");
-  assert.deepEqual(await page.evaluate(() => JSON.parse(sessionStorage.getItem("auth-events"))), ["signin", "profile"]);
+  await page.locator("#auth-submit").click();
+  await page.waitForURL("**/dashboard.html");
+  assert.deepEqual(
+    await page.evaluate(() =>
+      JSON.parse(sessionStorage.getItem("auth-events")),
+    ),
+    ["signin", "profile"],
+  );
   await page.goto("http://127.0.0.1:4173/signup.html");
-  await page.waitForFunction(() => !document.querySelector("#auth-submit").disabled);
+  await page.waitForFunction(
+    () => !document.querySelector("#auth-submit").disabled,
+  );
   await page.evaluate(() => sessionStorage.setItem("auth-events", "[]"));
   await page.locator("#name").fill("Fixture User");
   await page.locator("#email").fill("test@example.test");
   await page.locator("#password").fill("fixture-password");
-  await page.locator("#auth-submit").click();await page.waitForURL("**/dashboard.html");
-  assert.deepEqual(await page.evaluate(() => JSON.parse(sessionStorage.getItem("auth-events"))), ["create", "name", "profile"]);
+  await page.locator("#auth-submit").click();
+  await page.waitForURL("**/dashboard.html");
+  assert.deepEqual(
+    await page.evaluate(() =>
+      JSON.parse(sessionStorage.getItem("auth-events")),
+    ),
+    ["create", "name", "profile"],
+  );
   await page.goto("http://127.0.0.1:4173/signin.html");
-  await page.waitForFunction(() => !document.querySelector("#auth-submit").disabled);
+  await page.waitForFunction(
+    () => !document.querySelector("#auth-submit").disabled,
+  );
   await page.evaluate(() => sessionStorage.setItem("auth-events", "[]"));
-  await page.locator("#google-signin").click();await page.waitForURL("**/dashboard.html");
-  assert.deepEqual(await page.evaluate(() => JSON.parse(sessionStorage.getItem("auth-events"))), ["google", "profile"]);
+  await page.locator("#google-signin").click();
+  await page.waitForURL("**/dashboard.html");
+  assert.deepEqual(
+    await page.evaluate(() =>
+      JSON.parse(sessionStorage.getItem("auth-events")),
+    ),
+    ["google", "profile"],
+  );
   assert.deepEqual(errors, []);
   console.log(
     "PASS: 14 responsive layouts, dark mode, onboarding, manual logging, edit/undo/delete, cap flex/undo, category restoration, text review, XSS rendering, receipt fallback, deduplication, persistence, short-screen dialogs and mocked email/Google/signup/password-reset flows.",

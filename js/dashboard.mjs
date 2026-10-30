@@ -11,7 +11,6 @@ import { connectStore } from "./store.mjs";
 import { icon, hydrateIcons, escapeHTML as esc } from "./icons.mjs";
 import { parseText, prepareImage, parseReceipt } from "./capture.mjs";
 const $ = (selector) => document.querySelector(selector);
-const demo = new URLSearchParams(location.search).get("demo") === "1";
 let store,
   state = { profile: {}, caps: [], periods: [], expenses: [] },
   limit = 8,
@@ -138,7 +137,6 @@ function render() {
   $("#connection-state").hidden = true;
   $("#workspace").hidden = false;
   $("#capture-dock").hidden = false;
-  $("#demo-badge").hidden = !demo;
   $("#profile-button").textContent = (state.profile.displayName || "You")
     .slice(0, 1)
     .toUpperCase();
@@ -164,7 +162,7 @@ function render() {
   $("#streak").textContent = `✳ ${streak} days within caps`;
   $("#streak").title =
     "Based on logged spending and your original caps this month.";
-  const rewardKey = `shield-reward-${demo ? "demo" : store.user?.uid}-${today().slice(0, 7)}`;
+  const rewardKey = `shield-reward-${store.user?.uid}-${today().slice(0, 7)}`;
   if (nearEnd && streak >= 7 && !sessionStorage.getItem(rewardKey)) {
     sessionStorage.setItem(rewardKey, "1");
     $("#streak").classList.add("streak-celebrate");
@@ -712,7 +710,7 @@ function accountSheet() {
   openSheet(
     "Make yourself at home.",
     "YOUR SPACE",
-    `<p class="account-email">${demo ? "You’re exploring a local demo. Nothing here reaches an account." : esc(store.user?.email || "")}</p><form id="profile-form"><label class="form-field"><span class="form-label">Your name</span><input id="profile-name" class="field-input" maxlength="60" value="${esc(state.profile.displayName || "")}"></label><p class="field-error" id="profile-error" role="alert"></p><button class="button button-full">Save name</button></form><div class="account-actions" style="margin-top:20px"><button class="button" id="account-caps">Manage spending caps</button>${demo ? '<a class="button button-primary" href="signup.html">Make this space yours</a><a class="button" href="dashboard.html?demo=1&fresh=1">Try the onboarding</a>' : '<button class="button button-danger" id="signout">Sign out</button>'}</div><p class="sheet-hint">INR · India Standard Time. Your caps reset each calendar month.</p>`,
+    `<p class="account-email">${esc(store.user?.email || "")}</p><form id="profile-form"><label class="form-field"><span class="form-label">Your name</span><input id="profile-name" class="field-input" maxlength="60" value="${esc(state.profile.displayName || "")}"></label><p class="field-error" id="profile-error" role="alert"></p><button class="button button-full">Save name</button></form><div class="account-actions" style="margin-top:20px"><button class="button" id="account-caps">Manage spending caps</button><button class="button button-danger" id="signout">Sign out</button></div><p class="sheet-hint">INR · India Standard Time. Your caps reset each calendar month.</p>`,
   );
   $("#account-caps").onclick = () => setup();
   $("#signout")?.addEventListener("click", async (e) => {
@@ -749,13 +747,8 @@ function accountSheet() {
 $("#profile-button").onclick = () => store && accountSheet();
 async function boot() {
   try {
-    store = await connectStore(
-      demo,
-      new URLSearchParams(location.search).get("fresh") === "1",
-    );
+    store = await connectStore();
     if (!store) return;
-    if (demo && new URLSearchParams(location.search).has("fresh"))
-      history.replaceState(null, "", "dashboard.html?demo=1");
     await store.start(
       (data) => {
         state = data;
@@ -767,13 +760,12 @@ async function boot() {
         else toast("Couldn’t sync your spending. " + error.message);
       },
     );
-    if (!demo)
-      store.auth.onAuthStateChanged((user) => {
-        if (!user) {
-          store.stop();
-          location.replace("signin.html");
-        }
-      });
+    store.auth.onAuthStateChanged((user) => {
+      if (!user) {
+        store.stop();
+        location.replace("signin.html");
+      }
+    });
     setInterval(() => {
       if (loaded) render();
     }, 60000);
@@ -784,7 +776,7 @@ async function boot() {
 function connectionError(error) {
   $("#connection-state").hidden = false;
   $("#connection-state").innerHTML =
-    `${icon("info")}<h2>Your space is taking a moment.</h2><p>${esc(error.message)}</p><div class="sheet-actions"><a class="button button-primary" href="dashboard.html?demo=1">Explore the demo</a><button class="button" id="retry">Try again</button></div>`;
+    `${icon("info")}<h2>Your space is taking a moment.</h2><p>${esc(error.message)}</p><div class="sheet-actions"><a class="button button-primary" href="signin.html">Sign in</a><button class="button" id="retry">Try again</button></div>`;
   $("#retry").onclick = () => location.reload();
 }
 window.addEventListener("offline", () =>

@@ -6,7 +6,7 @@ globalThis.localStorage = {
   },
   setItem() {},
 };
-const { DemoStore } = await import("../js/store.mjs");
+const { DemoStore } = await import("./fixtures/demo-store.mjs");
 test("caps can be added, retired and restored without losing their period", async () => {
   const store = new DemoStore(true);
   const cap = { id: "coffee", limitMinor: 100000, active: true },

@@ -29,21 +29,23 @@ for (const file of fs
   .readdirSync(path.join(root, "js"))
   .filter((f) => f.endsWith(".mjs")))
   fs.copyFileSync(path.join(root, "js", file), path.join(out, "js", file));
-const config = vm.runInNewContext(
-  fs.readFileSync(path.join(root, "config.js"), "utf8") + "\nAPP_CONFIG;",
-  {},
-  { timeout: 1000 },
-);
-// Only public Firebase settings enter the deployable directory. AI secrets never do.
-const safe = {
-  firebase: config.firebase,
-  functionsRegion: config.functionsRegion || "asia-south1",
-  appCheckSiteKey: config.appCheckSiteKey || "",
-};
-fs.writeFileSync(
-  path.join(out, "config.js"),
-  "const APP_CONFIG = " + JSON.stringify(safe, null, 2) + ";\n",
-);
-console.log(
-  "Built static app in public/. Only public Firebase configuration was included.",
-);
+if (fs.existsSync(path.join(root, "config.js"))) {
+  const config = vm.runInNewContext(
+    fs.readFileSync(path.join(root, "config.js"), "utf8") + "\nAPP_CONFIG;",
+    {},
+    { timeout: 1000 },
+  );
+  // Only public Firebase settings enter the deployable directory. AI secrets never do.
+  const safe = {
+    firebase: config.firebase,
+    functionsRegion: config.functionsRegion || "asia-south1",
+    appCheckSiteKey: config.appCheckSiteKey || "",
+  };
+  fs.writeFileSync(
+    path.join(out, "js/firebase-settings.mjs"),
+    "export const publicConfig = " + JSON.stringify(safe, null, 2) + ";\n",
+  );
+  console.log(
+    "Built static app in public/. Only public Firebase configuration was included.",
+  );
+}
