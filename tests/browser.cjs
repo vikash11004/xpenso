@@ -230,6 +230,62 @@ fs.mkdirSync(out, { recursive: true });
       .textContent(),
     /1,800/,
   );
+  // Custom categories persist and participate in logging and pace calculations.
+  await page.locator("#manage-caps").click();
+  await page.getByText("Add a category", { exact: true }).click();
+  await page.locator("#custom-category-name").fill("Groceries");
+  await page.locator("#custom-category-limit").fill("2750.50");
+  await page.locator("#custom-category-icon").selectOption("🛒");
+  await page
+    .getByRole("button", { name: "Add to my caps", exact: true })
+    .click();
+  const customId = await page
+    .locator("#setup-chips")
+    .getByRole("button", { name: "🛒 Groceries", exact: true })
+    .getAttribute("data-id");
+  await page.getByText("Add a category", { exact: true }).click();
+  await page.locator("#custom-category-name").fill("groceries");
+  await page.locator("#custom-category-limit").fill("1000");
+  await page
+    .getByRole("button", { name: "Add to my caps", exact: true })
+    .click();
+  assert.match(
+    await page.locator("#custom-category-error").textContent(),
+    /already exists/,
+  );
+  await checkWidth();
+  await page.getByRole("button", { name: "Save my caps", exact: true }).click();
+  await page.locator("#sheet").waitFor({ state: "hidden" });
+  assert.equal(
+    await page.locator(".cap-card").filter({ hasText: "Groceries" }).count(),
+    1,
+  );
+  await page.getByRole("button", { name: "Just an amount" }).click();
+  await page.locator("#expense-amount").fill("100");
+  await page.locator("#expense-merchant").fill("Vegetable market");
+  await page.locator(`[data-cap="${customId}"]`).click();
+  await page.getByRole("button", { name: "Log spending", exact: true }).click();
+  await page.locator("#sheet").waitFor({ state: "hidden" });
+  await page.reload();
+  await page.locator("#workspace").waitFor({ state: "visible" });
+  assert.match(
+    await page
+      .locator(".cap-card")
+      .filter({ hasText: "Groceries" })
+      .textContent(),
+    /2,650.50/,
+  );
+  await page.locator("#pace-cap").selectOption(customId);
+  assert.match(
+    await page.locator("#spending-chart").getAttribute("aria-label"),
+    /Groceries/,
+  );
+  await page.locator("#manage-caps").click();
+  assert.equal(
+    await page.locator(`[data-limit="${customId}"]`).inputValue(),
+    "2750.5",
+  );
+  await page.keyboard.press("Escape");
   // A legacy demo URL must still require a real sign-in in production code.
   await ctx.unroute("**/js/store.mjs");
   await page.route("**/js/firebase.mjs", (route) =>

@@ -1768,3 +1768,28 @@ a {
     min-width: 44px;
   }
 }
+
+.custom-category {
+  margin: 16px 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.custom-category summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  min-height: 28px;
+}
+.custom-category[open] summary {
+  margin-bottom: 18px;
+}
+.custom-category form {
+  min-width: 0;
+}
+.custom-category .field-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cap-name,.cap-setup-row>span{overflow-wrap:anywhere;min-width:0}.chip{max-width:100%;overflow-wrap:anywhere}

@@ -357,7 +357,7 @@ function setup(required = false) {
   const values = new Map(
     options.map((c) => [
       c.id,
-      Math.round((periodFor(c.id)?.effectiveLimitMinor ?? c.limitMinor) / 100),
+      (periodFor(c.id)?.effectiveLimitMinor ?? c.limitMinor) / 100,
     ]),
   );
   openSheet(
@@ -398,6 +398,47 @@ function setup(required = false) {
       );
   };
   draw();
+  const custom = document.createElement("details");
+  custom.className = "custom-category";
+  custom.innerHTML = `<summary>Add a category</summary><form id="custom-category-form"><label class="form-field"><span class="form-label">Category name</span><input class="field-input" id="custom-category-name" placeholder="Groceries, fitness, subscriptions…" maxlength="60" required></label><label class="form-field"><span class="form-label">Monthly cap (₹)</span><input class="field-input" id="custom-category-limit" placeholder="2000" inputmode="decimal" required></label><label class="form-field"><span class="form-label">Icon</span><select class="field-input" id="custom-category-icon" aria-label="Category icon"><option>🏷️</option><option>🛒</option><option>💪</option><option>🏠</option><option>🎮</option><option>📚</option><option>💊</option><option>🎬</option><option>🐾</option></select></label><p class="field-error" id="custom-category-error" role="alert"></p><button class="button" type="submit">Add to my caps</button></form>`;
+  $("#setup-chips").after(custom);
+  custom.insertAdjacentHTML(
+    "afterend",
+    '<p id="custom-category-status" class="sheet-hint" role="status"></p>',
+  );
+  $("#custom-category-form").onsubmit = (event) => {
+    event.preventDefault();
+    try {
+      const name = $("#custom-category-name").value.trim().replace(/\s+/g, " ");
+      if (!name) throw new Error("Give your category a name.");
+      if (
+        options.some(
+          (c) => c.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+        )
+      )
+        throw new Error("That category already exists. Select its chip above.");
+      const limitMinor = minorUnits($("#custom-category-limit").value);
+      const category = {
+        id: "custom_" + crypto.randomUUID(),
+        name,
+        icon: $("#custom-category-icon").value,
+        limitMinor,
+        tone: "sage",
+      };
+      options.push(category);
+      selected.add(category.id);
+      values.set(category.id, limitMinor / 100);
+      draw();
+      event.target.reset();
+      $("#custom-category-error").textContent = "";
+      custom.open = false;
+      $("#custom-category-status").textContent =
+        "Category added. Save your caps to keep it.";
+      $("#setup-rows").querySelector(`[data-limit="${category.id}"]`).focus();
+    } catch (error) {
+      $("#custom-category-error").textContent = error.message;
+    }
+  };
   $("#setup-form").onsubmit = async (e) => {
     e.preventDefault();
     const button = e.submitter;
