@@ -1,5 +1,5 @@
 import { localDay, migrateTransaction } from "./domain.mjs";
-import { getFirebase, ensureProfile } from "./firebase.mjs";
+import { getFirebase, ensureProfile, validateSession } from "./firebase.mjs";
 function expenseFields(value) {
   const keys = [
     "amountMinor",
@@ -264,5 +264,6 @@ export async function connectStore() {
     location.replace("signin.html");
     return null;
   }
+  await validateSession(user, services.auth);
   return new FirebaseStore(services, user);
 }

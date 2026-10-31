@@ -15,6 +15,15 @@ function script(src) {
 export async function getFirebase() {
   if (!instance)
     instance = (async () => {
+      if (
+        location.protocol !== "https:" &&
+        !(
+          location.protocol === "http:" &&
+          ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)
+        )
+      ) {
+        throw new Error("Open this app over HTTPS to sign in securely.");
+      }
       const config = publicConfig;
       if (
         !config?.firebase?.apiKey ||
@@ -47,12 +56,41 @@ export async function getFirebase() {
         db.useEmulator("127.0.0.1", 8080);
         functions.useEmulator("127.0.0.1", 5001);
       }
+      // Set this before any login or auth observer so an inherited SESSION setting
+      // cannot make a successful login disappear when the browser closes.
+      try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } catch {
+        throw new Error(
+          "Allow this site to store browser data to stay signed in. Private browsing or blocked storage may prevent saved sessions.",
+        );
+      }
       return { app, auth, db, functions, config };
     })().catch((error) => {
       instance = null;
       throw error;
     });
   return instance;
+}
+export async function validateSession(user, auth) {
+  try {
+    // Refresh with Firebase before exposing a restored account's spending data.
+    await user.getIdToken(true);
+  } catch (error) {
+    if (
+      [
+        "auth/user-disabled",
+        "auth/user-token-expired",
+        "auth/invalid-user-token",
+        "auth/user-not-found",
+      ].includes(error.code)
+    ) {
+      await auth.signOut();
+      throw new Error("Your session has ended. Please sign in again.");
+    }
+    // A lost connection must not delete an otherwise valid saved session.
+    throw error;
+  }
 }
 export async function ensureProfile(user, db) {
   const ref = db.collection("users").doc(user.uid);

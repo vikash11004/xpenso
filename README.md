@@ -136,3 +136,9 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Custom-domain Google sign-in
 
 Add `xpenso.vikashthyadi.in` in Firebase Console → Authentication → Settings → Authorized domains for project `xpenso-740e9`. This domain was missing when checked. The deployed site also returned 404 for the ignored `config.js`; the frontend now imports tracked public settings from `js/firebase-settings.mjs`, so direct repository deployments include Firebase configuration. Redeploy the updated source or generated `public/` directory. No AI secrets are included.
+
+## Saved sign-in sessions
+
+Firebase Auth explicitly uses LOCAL persistence before sign-in and auth observers. Returning to the home URL resumes the dashboard; the dashboard waits for auth restoration and refreshes the Firebase token before reading private data. Disabled or invalid sessions sign out. Network failures retain the saved session for retry. Explicit sign-out clears Firebase authentication, and browser Back restoration reloads the dashboard to recheck access. Firestore continues using memory cache rather than a durable local ledger. Authentication requires HTTPS outside local development. Passwords are never stored by application code. Private browsing, clearing site data, changing browsers/domains, and revoked credentials can still require sign-in.
+
+`node tests/session-browser.cjs` uses the real Firebase SDK with synthetic provider responses and an isolated browser profile to verify login survives a full browser restart and sign-out survives another restart. It accepts the same Playwright environment variables as the main browser suite. No real accounts are used.

@@ -827,4 +827,8 @@ window.addEventListener("online", () =>
   toast("Back online. Your space is reconnecting."),
 );
 window.addEventListener("beforeunload", () => store?.stop());
+// A browser Back restoration must recheck auth rather than reveal an old ledger.
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) location.reload();
+});
 boot();

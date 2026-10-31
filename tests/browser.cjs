@@ -291,7 +291,7 @@ fs.mkdirSync(out, { recursive: true });
   await page.route("**/js/firebase.mjs", (route) =>
     route.fulfill({
       contentType: "text/javascript",
-      body: `export async function ensureProfile(){};export async function getFirebase(){return {auth:{onAuthStateChanged(callback){queueMicrotask(()=>callback(null));return ()=>{};}}};}`,
+      body: `export async function validateSession(){};export async function ensureProfile(){};export async function getFirebase(){return {auth:{onAuthStateChanged(callback){queueMicrotask(()=>callback(null));return ()=>{};}}};}`,
     }),
   );
   await page.goto("http://127.0.0.1:4173/dashboard.html?demo=1");
@@ -307,7 +307,7 @@ fs.mkdirSync(out, { recursive: true });
       const delay = () => new Promise(resolve => setTimeout(resolve, 25));
       const user = { uid: 'fixture', email: 'test@example.test', displayName: '', async updateProfile(value) { Object.assign(this,value); record('name'); } };
       globalThis.firebase = { auth: { GoogleAuthProvider: class {} } };
-      export async function ensureProfile() { record('profile'); return {}; }
+      export async function validateSession(){};export async function ensureProfile() { record('profile'); return {}; }
       export async function getFirebase() { return { db: {}, auth: {
         onAuthStateChanged(callback) { observer=callback; queueMicrotask(()=>callback(null)); return ()=>{}; },
         async createUserWithEmailAndPassword() { await delay(); record('create'); observer(user); return {user}; },
